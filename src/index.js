@@ -1,24 +1,10 @@
 import { reject } from 'lodash';
 import { galleryPictureCard } from './templates/galleryPictureCard';
-import axios from 'axios';
+import fetchPhoto from './js/api';
 
 const refs = {
   form: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
-};
-
-const API_KEY = '34271519-257a556d5fe8c31a240fa9516';
-const URL = 'https://pixabay.com/api/';
-const config = {
-  params: {
-    key: API_KEY,
-    q: 'cat',
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: true,
-    page: 1,
-    per_page: 40,
-  },
 };
 
 refs.form.addEventListener('submit', onSearch);
@@ -26,27 +12,20 @@ refs.form.addEventListener('submit', onSearch);
 function onSearch(e) {
   e.preventDefault();
 
+  const searchValue = e.target.searchQuery.value;
+
   try {
-    main().then(response => {
+    const response = fetchPhoto(searchValue);
+
+    response.then(response => {
       const photos = response.data.hits;
 
       console.log('photos:', photos);
 
       renderCard(photos);
-      console.log('renderCard:', renderCard);
     });
   } catch (error) {
     console.log(error);
-  }
-}
-
-async function main() {
-  try {
-    const response = await axios.get(URL, config);
-
-    return response;
-  } catch (error) {
-    console.error(error);
   }
 }
 
