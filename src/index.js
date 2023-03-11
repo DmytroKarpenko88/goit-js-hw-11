@@ -1,4 +1,3 @@
-import { reject } from 'lodash';
 // Описаний в документації
 import SimpleLightbox from 'simplelightbox';
 // Додатковий імпорт стилів
@@ -12,6 +11,12 @@ const refs = {
   gallery: document.querySelector('.gallery'),
   btnLoadMore: document.querySelector('button.load-more'),
 };
+
+const lightbox = new SimpleLightbox('.gallery a', {
+  animationSlide: false,
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 
 let searchValue = '';
 let numberPage = 1;
@@ -44,9 +49,9 @@ async function onSearch(e) {
       Notify.info(`Hooray! We found ${totalHits} images.`);
     }
 
-    // if (response.name === 'AxiosError') {
-    //   throw new Error(response.message);
-    // }
+    if (response.name === 'AxiosError') {
+      throw new Error(response.message);
+    }
 
     const photos = await response.data.hits;
 
@@ -115,12 +120,6 @@ async function renderCard(data) {
   lightbox.refresh();
   smothScroll();
 }
-
-const lightbox = new SimpleLightbox('.gallery a', {
-  animationSlide: false,
-  captionsData: 'alt',
-  captionDelay: 250,
-});
 
 function smothScroll() {
   const { height: cardHeight } = document
