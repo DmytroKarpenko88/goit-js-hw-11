@@ -1,36 +1,94 @@
 import { reject } from 'lodash';
+// Описаний в документації
+import SimpleLightbox from 'simplelightbox';
+// Додатковий імпорт стилів
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { galleryPictureCard } from './templates/galleryPictureCard';
 import fetchPhoto from './js/api';
 
 const refs = {
   form: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
+  btnLoadMore: document.querySelector('button.load-more'),
 };
 
+let searchValue = '';
+let numberPage = 1;
+let totalHits = null;
+refs.btnLoadMore;
 refs.form.addEventListener('submit', onSearch);
+refs.btnLoadMore.classList.toggle('visually-hidden');
+refs.btnLoadMore.addEventListener('click', onLoad);
 
-function onSearch(e) {
+async function onSearch(e) {
   e.preventDefault();
+  refs.gallery.innerHTML = '';
 
-  const searchValue = e.target.searchQuery.value;
+  searchValue = e.target.searchQuery.value.trim();
 
   try {
-    const response = fetchPhoto(searchValue);
+    const response = await fetchPhoto(searchValue);
+    numberPage += 1;
+    totalHits = response.data.totalHits;
+    refs.btnLoadMore.classList.toggle('visually-hidden');
 
-    response.then(response => {
-      const photos = response.data.hits;
+    if (!totalHits) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    } else if (totalHits === 1) {
+      Notify.info(`Hooray! We found ${totalHits} image.`);
+    } else {
+      Notify.info(`Hooray! We found ${totalHits} images.`);
+    }
 
-      console.log('photos:', photos);
+    // if (response.name === 'AxiosError') {
+    //   throw new Error(response.message);
+    // }
 
-      renderCard(photos);
-    });
+    const photos = await response.data.hits;
+
+    if (photos.length === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+    renderCard(photos);
   } catch (error) {
-    console.log(error);
+    Notify.failure(error);
   }
 }
 
-function renderCard(data) {
-  refs.gallery.innerHTML = data
+async function onLoad() {
+  const totalCounts = document.querySelectorAll('.photo-card').length;
+  console.log('totalCounts:', totalCounts);
+
+  if (totalHits === totalCounts) {
+    refs.btnLoadMore.classList.toggle('visually-hidden');
+
+    Notify.info("We're sorry, but you've reached the end of search results.");
+  }
+  try {
+    const response = await fetchPhoto(searchValue, numberPage);
+
+    if (response.name === 'AxiosError') {
+      throw new Error(response.message);
+    }
+
+    const photos = await response.data.hits;
+
+    renderCard(photos);
+
+    numberPage += 1;
+  } catch (error) {
+    Notify.failure(error);
+  }
+}
+
+async function renderCard(data) {
+  const markup = await data
     .map(
       ({
         webformatURL,
@@ -52,38 +110,25 @@ function renderCard(data) {
         })
     )
     .join('');
+
+  refs.gallery.insertAdjacentHTML('beforeend', markup);
+  lightbox.refresh();
+  smothScroll();
 }
 
-/*
-  webformatURL - посилання на маленьке зображення для списку карток.
-largeImageURL - посилання на велике зображення.
-tags - рядок з описом зображення. Підійде для атрибуту alt.
-likes - кількість лайків.
-views - кількість переглядів.
-comments - кількість коментарів.
-downloads - кількість завантажень.
-  */
-// axios(URL, config)
-//   .then(({ data }) =>
-//     data.hits.map(
-//       ({
-//         webformatURL,
-//         largeImageURL,
-//         tags,
-//         likes,
-//         views,
-//         comments,
-//         downloads,
-//       }) =>
-//         console.log(
-//           webformatURL,
-//           largeImageURL,
-//           tags,
-//           likes,
-//           views,
-//           comments,
-//           downloads
-//         )
-//     )
-//   )
-//   .catch(error => console.error(error));
+const lightbox = new SimpleLightbox('.gallery a', {
+  animationSlide: false,
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+
+function smothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}

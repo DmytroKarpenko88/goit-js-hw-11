@@ -18,7 +18,9 @@ export const galleryPictureCard = ({
 }) => {
   return `
   <div class="photo-card">
+  <a href="${largeImageURL}">
   <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+  </a> 
   <div class="info">
     <p class="info-item">
       <b>Likes</b>
