@@ -1,65 +1,110 @@
-import './css/styles.css';
-import fetchCountries from './js/fetchCountries';
-import { listItemTemplate } from './templates/listItemTemplate';
-import { countryCardTemplate } from './templates/countryCardTemplate';
-
-import debounce from 'lodash.debounce';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
-
-const DEBOUNCE_DELAY = 300;
+import { reject } from 'lodash';
+import { galleryPictureCard } from './templates/galleryPictureCard';
+import axios from 'axios';
 
 const refs = {
-  input: document.querySelector('#search-box'),
-  countryList: document.querySelector('.country-list'),
-  countryInfo: document.querySelector('.country-info'),
+  form: document.querySelector('#search-form'),
+  gallery: document.querySelector('.gallery'),
 };
 
-refs.input.addEventListener('input', debounce(onInputSearch, DEBOUNCE_DELAY));
+const API_KEY = '34271519-257a556d5fe8c31a240fa9516';
+const URL = 'https://pixabay.com/api/';
+const config = {
+  params: {
+    key: API_KEY,
+    q: 'cat',
+    image_type: 'photo',
+    orientation: 'horizontal',
+    safesearch: true,
+    page: 1,
+    per_page: 40,
+  },
+};
 
-function onInputSearch(event) {
-  const inputValue = event.target.value.trim();
+refs.form.addEventListener('submit', onSearch);
 
-  removeChildren(refs.countryList);
-  removeChildren(refs.countryInfo);
+function onSearch(e) {
+  e.preventDefault();
 
-  if (inputValue === '') {
-    return;
-  }
-  const data = fetchCountries(inputValue);
+  try {
+    main().then(response => {
+      const photos = response.data.hits;
 
-  data
-    .then(countries => {
-      if (countries.length > 10) {
-        Notify.info(
-          'Too many matches found. Please enter a more specific name.'
-        );
-        return;
-      }
+      console.log('photos:', photos);
 
-      if (countries.length === 1) {
-        renderCard(countries[0]);
-        return;
-      }
-
-      renderList(countries);
-    })
-    .catch(error => {
-      Notify.failure('Oops, there is no country with that name');
+      renderCard(photos);
+      console.log('renderCard:', renderCard);
     });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-function renderList(countries) {
-  refs.countryList.innerHTML = countries
-    .map(({ name, flags }) => listItemTemplate({ name, flags }))
+async function main() {
+  try {
+    const response = await axios.get(URL, config);
+
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function renderCard(data) {
+  refs.gallery.innerHTML = data
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) =>
+        galleryPictureCard({
+          webformatURL,
+          largeImageURL,
+          tags,
+          likes,
+          views,
+          comments,
+          downloads,
+        })
+    )
     .join('');
 }
 
-function renderCard(country) {
-  refs.countryInfo.innerHTML = countryCardTemplate(country);
-}
-
-function removeChildren(el) {
-  while (el.firstChild) {
-    el.removeChild(el.firstChild);
-  }
-}
+/*
+  webformatURL - посилання на маленьке зображення для списку карток.
+largeImageURL - посилання на велике зображення.
+tags - рядок з описом зображення. Підійде для атрибуту alt.
+likes - кількість лайків.
+views - кількість переглядів.
+comments - кількість коментарів.
+downloads - кількість завантажень.
+  */
+// axios(URL, config)
+//   .then(({ data }) =>
+//     data.hits.map(
+//       ({
+//         webformatURL,
+//         largeImageURL,
+//         tags,
+//         likes,
+//         views,
+//         comments,
+//         downloads,
+//       }) =>
+//         console.log(
+//           webformatURL,
+//           largeImageURL,
+//           tags,
+//           likes,
+//           views,
+//           comments,
+//           downloads
+//         )
+//     )
+//   )
+//   .catch(error => console.error(error));
