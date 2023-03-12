@@ -25,6 +25,28 @@ refs.btnLoadMore;
 refs.form.addEventListener('submit', onSearch);
 refs.btnLoadMore.classList.toggle('visually-hidden');
 refs.btnLoadMore.addEventListener('click', onLoad);
+window.addEventListener('scroll', () => {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  const totalCounts = document.querySelectorAll('.photo-card').length;
+  console.log('totalCounts:', totalCounts);
+
+  if (totalHits <= totalCounts) {
+    refs.btnLoadMore.classList.toggle('visually-hidden');
+
+    Notify.info("We're sorry, but you've reached the end of search results.");
+    return;
+  }
+  console.log({ scrollTop, scrollHeight, clientHeight });
+  if (scrollTop + clientHeight >= scrollHeight - 30) {
+    setTimeout(() => {
+      onLoad();
+    }, 500);
+
+    setTimeout(() => {
+      smothScroll();
+    }, 1000);
+  }
+});
 
 async function onSearch(e) {
   e.preventDefault();
@@ -70,7 +92,7 @@ async function onLoad() {
   const totalCounts = document.querySelectorAll('.photo-card').length;
   console.log('totalCounts:', totalCounts);
 
-  if (totalHits === totalCounts) {
+  if (totalHits <= totalCounts) {
     refs.btnLoadMore.classList.toggle('visually-hidden');
 
     Notify.info("We're sorry, but you've reached the end of search results.");
@@ -118,7 +140,6 @@ async function renderCard(data) {
 
   refs.gallery.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
-  smothScroll();
 }
 
 function smothScroll() {
