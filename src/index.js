@@ -36,7 +36,7 @@ window.addEventListener('scroll', () => {
     Notify.info("We're sorry, but you've reached the end of search results.");
     return;
   }
-  console.log({ scrollTop, scrollHeight, clientHeight });
+  // console.log({ scrollTop, scrollHeight, clientHeight });
   if (scrollTop + clientHeight >= scrollHeight - 30) {
     setTimeout(() => {
       onLoad();
@@ -53,6 +53,10 @@ async function onSearch(e) {
   refs.gallery.innerHTML = '';
 
   searchValue = e.target.searchQuery.value.trim();
+  if (searchValue === '') {
+    Notify.failure('Sorry, type something. Please try again.');
+    return;
+  }
 
   try {
     const response = await fetchPhoto(searchValue);
