@@ -4,7 +4,7 @@ import axios from 'axios';
 const API_KEY = '34271519-257a556d5fe8c31a240fa9516';
 const URL = 'https://pixabay.com/api/';
 
-export default async function fetchPhoto(value, numberPage = 1) {
+export async function fetchPhoto(value, numberPage = 1) {
   const config = {
     params: {
       key: API_KEY,
@@ -22,6 +22,6 @@ export default async function fetchPhoto(value, numberPage = 1) {
 
     return response;
   } catch (error) {
-    console.error(error);
+    console.error(error.message);
   }
 }
