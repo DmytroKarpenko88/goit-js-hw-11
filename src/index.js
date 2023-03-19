@@ -25,7 +25,7 @@ refs.form.addEventListener('submit', onSearch);
 
 async function onSearch(e) {
   e.preventDefault();
-  numberPage = 1;
+
   refs.gallery.innerHTML = '';
 
   searchValue = e.target.searchQuery.value.trim();
@@ -35,7 +35,7 @@ async function onSearch(e) {
 
   try {
     const response = await fetchPhoto(searchValue);
-    numberPage += 1;
+
     totalHits = response.data.totalHits;
 
     if (response.name === 'AxiosError') {
@@ -67,6 +67,7 @@ async function onSearch(e) {
 }
 
 async function onLoad() {
+  numberPage += 1;
   const totalCounts = document.querySelectorAll('.photo-card').length;
 
   if (Math.ceil(totalHits / per_page) < numberPage) {
@@ -82,8 +83,6 @@ async function onLoad() {
     const photos = await response.data.hits;
 
     renderCard(photos);
-
-    numberPage += 1;
   } catch (error) {
     Notify.failure(error.message);
   }
