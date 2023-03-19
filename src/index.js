@@ -4,7 +4,6 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { galleryPictureCard } from './templates/galleryPictureCard';
 import { fetchPhoto } from './js/api';
-import { entries } from 'lodash';
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -19,13 +18,14 @@ const lightbox = new SimpleLightbox('.gallery a', {
 });
 
 let searchValue = '';
-let numberPage = 1;
+let numberPage = null;
 let totalHits = null;
-refs.btnLoadMore;
+const per_page = 40;
 refs.form.addEventListener('submit', onSearch);
 
 async function onSearch(e) {
   e.preventDefault();
+  numberPage = 1;
   refs.gallery.innerHTML = '';
 
   searchValue = e.target.searchQuery.value.trim();
@@ -69,8 +69,10 @@ async function onSearch(e) {
 async function onLoad() {
   const totalCounts = document.querySelectorAll('.photo-card').length;
 
-  if (Math.floor(totalCounts / totalHits) !== 0) {
-    Notify.info("We're sorry, but you've reached the end of search results.");
+  if (Math.ceil(totalHits / per_page) < numberPage) {
+    return Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
   }
   try {
     const response = await fetchPhoto(searchValue, numberPage);
