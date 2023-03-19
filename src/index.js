@@ -25,6 +25,7 @@ refs.form.addEventListener('submit', onSearch);
 
 async function onSearch(e) {
   e.preventDefault();
+  numberPage = 1;
 
   refs.gallery.innerHTML = '';
 
@@ -67,8 +68,8 @@ async function onSearch(e) {
 }
 
 async function onLoad() {
-  numberPage += 1;
   const totalCounts = document.querySelectorAll('.photo-card').length;
+  numberPage += 1;
 
   if (Math.ceil(totalHits / per_page) < numberPage) {
     return Notify.info(
@@ -135,7 +136,7 @@ const onEntry = entries => {
   });
 };
 const options = {
-  rootMargin: '400px',
+  rootMargin: '300px',
 };
 const observer = new IntersectionObserver(onEntry, options);
 observer.observe(refs.sentinel);
