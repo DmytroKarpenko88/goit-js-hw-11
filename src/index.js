@@ -26,7 +26,7 @@ refs.form.addEventListener('submit', onSearch);
 async function onSearch(e) {
   e.preventDefault();
   numberPage = 1;
-
+  refs.sentinel.style.display = 'none';
   refs.gallery.innerHTML = '';
 
   searchValue = e.target.searchQuery.value.trim();
@@ -62,6 +62,7 @@ async function onSearch(e) {
       );
     }
     renderCard(photos);
+    refs.sentinel.style.display = 'block';
   } catch (error) {
     Notify.failure(error);
   }
