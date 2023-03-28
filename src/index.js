@@ -61,6 +61,8 @@ async function onSearch(e) {
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
+
+    refs.form.reset();
     renderCard(photos);
     refs.sentinel.style.display = 'block';
   } catch (error) {
