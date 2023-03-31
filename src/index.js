@@ -71,7 +71,6 @@ async function onSearch(e) {
 }
 
 async function onLoad() {
-  const totalCounts = document.querySelectorAll('.photo-card').length;
   numberPage += 1;
 
   if (Math.ceil(totalHits / per_page) < numberPage) {
